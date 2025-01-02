@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Фоторамка</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .container {
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        #canvas {
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #upload, #download {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #upload {
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+
+        #download {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+        }
+
+        #download:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>Добавьте свою фотографию в рамку</h1>
+    <div class="container">
+        <canvas id="canvas" width="450" height="576"></canvas>
+        <br>
+        <input type="file" id="upload" accept="image/*">
+        <button id="download">Скачать изображение</button>
+    </div>
+
+    <script>
+        // Получаем элементы
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const upload = document.getElementById('upload');
+        const downloadBtn = document.getElementById('download');
+
+        // Создаем объект Image для рамки
+        const frameImage = new Image();
+        frameImage.src = 'LBS.png'; // Укажите путь к вашему файлу рамки
+        frameImage.onload = () => {
+            drawFrame();
+        };
+
+        // Функция для отрисовки рамки на холсте
+        function drawFrame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        // Обработчик загрузки пользовательского изображения
+        upload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const userImage = new Image();
+            userImage.onload = () => {
+                // Подгоняем изображение под размеры холста, сохраняя пропорции
+                const scale = Math.max(canvas.width / userImage.width, canvas.height / userImage.height);
+                const x = (canvas.width / 2) - (userImage.width / 2) * scale;
+                const y = (canvas.height / 2) - (userImage.height / 2) * scale;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(userImage, x, y, userImage.width * scale, userImage.height * scale);
+                // Накладываем рамку сверху
+                ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+            };
+            userImage.src = URL.createObjectURL(file);
+        });
+
+        // Обработчик кнопки скачивания изображения
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'Our.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>
